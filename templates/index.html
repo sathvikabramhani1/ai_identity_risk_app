@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Identity Risk Scoring</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 400px;
+            margin: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        #result {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background: #f1f3f6;
+            margin: 6px 0;
+            padding: 8px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+    <h2>🔐 AI Adaptive Access Control</h2>
+
+    <input id="location" placeholder="Location (India / Europe / Other)">
+    <input id="device" placeholder="Device (known / unknown)">
+    <input id="failed" type="number" placeholder="Failed Attempts">
+    <input id="time" placeholder="Login Time (normal / odd)">
+
+    <br><br>
+    <button onclick="submitData()">Evaluate Risk</button>
+
+    <div id="result"></div>
+
+    <h3>📊 Recent Login Activity</h3>
+    <ul id="history"></ul>
+</div>
+
+<script>
+function submitData() {
+    fetch("/evaluate", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            location: document.getElementById("location").value,
+            device: document.getElementById("device").value,
+            failed_attempts: document.getElementById("failed").value,
+            time: document.getElementById("time").value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        let resultDiv = document.getElementById("result");
+
+        resultDiv.innerHTML =
+            "Risk Score: " + data.risk_score +
+            "<br>Decision: " + data.decision;
+
+        resultDiv.style.color = data.color;
+
+        // Update history UI
+        let historyList = document.getElementById("history");
+        historyList.innerHTML = "";
+
+        data.history.forEach(item => {
+            let li = document.createElement("li");
+
+            let color = item.score > 60 ? "red" :
+                        item.score > 30 ? "orange" : "green";
+
+            li.innerHTML = `
+                <strong>${item.location}</strong> 
+                → Score: ${item.score} 
+                → <span style="color:${color}">${item.decision}</span>
+            `;
+
+            historyList.appendChild(li);
+        });
+    });
+}
+</script>
+
+</body>
+</html>
