@@ -40,7 +40,6 @@ def evaluate():
         decision = "Block"
         color = "red"
 
-    # Save history (last 5)
     history.append({
         "location": data.get("location"),
         "score": score,
