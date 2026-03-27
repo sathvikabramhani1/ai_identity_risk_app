@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
-# Store last login attempts
 history = []
 
 def calculate_risk(data):

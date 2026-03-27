@@ -6,34 +6,52 @@
     <style>
         body {
             font-family: Arial;
-            background: #f4f6f9;
+            background: linear-gradient(135deg, #ffffff, #ffd6e8);
             text-align: center;
             padding: 30px;
+            color: black;
+            transition: 0.4s;
+        }
+
+        .pink {
+            background: linear-gradient(135deg, #fff0f5, #ffc0cb);
+        }
+
+        .blue {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+        }
+
+        .dark {
+            background: #121212;
+            color: white;
         }
 
         .card {
             background: white;
             padding: 25px;
-            border-radius: 12px;
+            border-radius: 15px;
             width: 400px;
             margin: auto;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border: 2px solid #ffe4ec;
         }
 
         input {
             width: 90%;
             padding: 10px;
             margin: 8px 0;
-            border-radius: 5px;
+            border-radius: 6px;
             border: 1px solid #ccc;
         }
 
         button {
-            padding: 10px 20px;
+            padding: 10px 15px;
+            margin: 5px;
             background: #007bff;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
         }
 
@@ -47,6 +65,19 @@
             font-weight: bold;
         }
 
+        .meter {
+            height: 10px;
+            background: #ddd;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .meter-fill {
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+        }
+
         ul {
             list-style: none;
             padding: 0;
@@ -58,15 +89,27 @@
             padding: 8px;
             border-radius: 6px;
         }
+
+        .theme-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
     </style>
 </head>
 
 <body>
 
+<div class="theme-buttons">
+    <button onclick="setTheme('pink')">🌸 Pink</button>
+    <button onclick="setTheme('blue')">🔵 Blue</button>
+    <button onclick="setTheme('dark')">🌙 Dark</button>
+</div>
+
 <div class="card">
     <h2>🔐 AI Adaptive Access Control</h2>
 
-    <input id="location" placeholder="Location (India / Europe / Other)">
+    <input id="location" placeholder="Location (India / Europe)">
     <input id="device" placeholder="Device (known / unknown)">
     <input id="failed" type="number" placeholder="Failed Attempts">
     <input id="time" placeholder="Login Time (normal / odd)">
@@ -76,11 +119,21 @@
 
     <div id="result"></div>
 
+    <!-- Risk meter -->
+    <div class="meter">
+        <div id="meterFill" class="meter-fill"></div>
+    </div>
+
     <h3>📊 Recent Login Activity</h3>
     <ul id="history"></ul>
 </div>
 
 <script>
+function setTheme(theme) {
+    document.body.classList.remove("pink", "blue", "dark");
+    document.body.classList.add(theme);
+}
+
 function submitData() {
     fetch("/evaluate", {
         method: "POST",
@@ -96,13 +149,21 @@ function submitData() {
     .then(data => {
         let resultDiv = document.getElementById("result");
 
+        let emoji = data.risk_score > 60 ? "🚨" :
+                    data.risk_score > 30 ? "⚠️" : "✅";
+
         resultDiv.innerHTML =
-            "Risk Score: " + data.risk_score +
+            emoji + " Risk Score: " + data.risk_score +
             "<br>Decision: " + data.decision;
 
         resultDiv.style.color = data.color;
 
-        // Update history UI
+        let meter = document.getElementById("meterFill");
+        meter.style.width = data.risk_score + "%";
+        meter.style.background =
+            data.risk_score > 60 ? "red" :
+            data.risk_score > 30 ? "orange" : "green";
+
         let historyList = document.getElementById("history");
         historyList.innerHTML = "";
 
